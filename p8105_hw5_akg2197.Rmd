@@ -2,7 +2,7 @@
 title: "p8105_hw5_akg2197"
 author: "Annie Gorman"
 date: "2024-11-12"
-output: html_document
+output: github_document
 ---
 
 ## Loading libraries 
