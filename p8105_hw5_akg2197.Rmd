@@ -69,6 +69,7 @@ sim_results |>
   ggplot(aes(x = mu, y = power)) + 
   geom_path() 
 ```
+
 From this plot, we can see that as effect size increases, so does power. Although this relationship is not linear, we do observe a direct relationship between effect size and power. Effect size describes the difference between the true statistics and the null statistics.
 
 #### Plot showing the average estimate of mu on the y axis and the true value of mu on the x axis
@@ -81,7 +82,8 @@ sim_results |>
   geom_point() + 
   geom_path() 
 ```
-#### Average estimate of mu only in samples for which the null was rejected on the y axis and the true value of mu on the x axis
+
+#### Avg estimate of mu where y = null was rejected and x = true value of mu 
 ```{r}
 sim_results |>
   filter(significant_results == 1) |>
@@ -93,3 +95,29 @@ sim_results |>
 ```
 
 When mu is equal to 1, 2, or 3, the the sample average of mu across tests for which the null is rejected is NOT equal to the true value of mu. For mu = 4, 5, or 6, the average of mu is approximately equal to the true value of mu. This is because higher values lead to rejection of the mu (significant result). However, when we have smaller values like 1, 2, or 3, a smaller proportion of the sample gets rejected, and many of those values will have sample values larger than the true mu. This would result in unequal sample averages to the true mu, especially sample averages that are higher than the true mu.  
+
+# Problem 3 
+
+#### Reading in raw data and making city state variable
+```{r}
+homicide_df <- read_csv("homicide-data.csv") |>
+    mutate(city_state = map2(city, state, ~ paste(.x, .y, sep = ","))) 
+```
+This raw data includes variables of homicides, including ID number sequence, date homicide was reported, victim race, age, last name, first name, and sex, as well as the city, state, latitude, and longitude where the murder was committed. Disposition (details of arrest) is also included. I added the city, state variable here. 
+
+#### City/state variable and summarizing homicides 
+I already created my city, state variable. Now, I will be summarizing within cities to obtain the total number of homicides and the number of unsolved homicides (those for which the disposition is “Closed without arrest” or “Open/No arrest”). To do this, I will create a new df filtering disposition by "closed without arrest" and "open/no arrest" and merge it with the originial homicide dataframe so we have unsolved homicides for each city/state. 
+
+```{r}
+unsolved_counts <- homicide_df |>
+  filter(disposition %in% c("Closed without arrest", "Open/No arrest")) |>
+  group_by(city_state) |>
+  summarise(unsolved_count = n(), .groups = "drop")
+```
+
+Merging the data frames back together:
+
+```{r}
+homicide_df <- homicide_df |>
+  left_join(unsolved_counts, by = "city_state")
+```
