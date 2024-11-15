@@ -206,6 +206,8 @@ baltimore_results <-
 broom::tidy(baltimore_results) |>
   select(estimate, conf.low, conf.high)
 ```
+#### Estimating the proportion of homicides that are unsolved in all city states 
+
 Now I will write a function to get these values for each of the cities in the dataset:
 
 ```{r}
@@ -220,7 +222,40 @@ city_function <- function(cityname) {
       pull(total_count))
 
 broom::tidy(city_results) |>
-  select(estimate, conf.low, conf.high)
+  mutate(city_state = cityname) |>
+  select(city_state, estimate, conf.low, conf.high)
 }
+```
+
+Mapping this function so we can apply it to all cities and run the proportion test:
+
+```{r}
+city_results <- unsolved_counts |>
+  pull(city_state) |>  
+  unique() |>          
+  purrr::map(~city_function(.)) |>  
+  bind_rows() 
+
+city_results
+```
+
+#### Plotting estimates and CIs for proportion of unsolved homicides in each city
+
+Now that we've applied our function to all the cities, we can create a plot that shows the estimates and CIs for each city
+
+```{r}
+city_results |>
+  mutate(city_state = fct_reorder(city_state, estimate)) |>
+  ggplot(aes(x = city_state, y = estimate, color = city_state)) +
+  geom_point(size = 3) + 
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2, color = "black") + 
+  coord_flip() +
+  labs(
+    title = "Proportion Estimates of Unsolved Homicides by US City",
+    x = "City",
+    y = "Estimated Proportion of Unsolved Homicides"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "none")
 ```
 
