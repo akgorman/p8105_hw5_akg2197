@@ -44,7 +44,7 @@ sim_function <- function(n = 30, mu = 0, sigma = 5) {
 ```
 
 ```{r}
-sim_results = tibble(mu = 1:6) |>
+sim_results = tibble(mu = 0:6) |>
   mutate(
     output_df = map(.x = mu, ~rerun(5000, sim_function(n = 30, mu=.x))) ,
     value_df = map(output_df, bind_rows)
@@ -57,3 +57,16 @@ sim_results = sim_results |>
   select(estimate, p.value, mu) |>
   mutate(significant_results = as.numeric(p.value < 0.05))
 ```
+
+### Let's make some plots using the above function outputs
+
+Plot showing the proportion of times the null was rejected (the power of the test) on the y axis and the true value of mu on the x axis:
+
+```{r}
+sim_results |>
+  group_by(mu) |>
+  summarize(power = mean(significant_results)) |>
+  ggplot(aes(x = mu, y = power)) + 
+  geom_path() 
+```
+From this plot, we can see that as effect size increases, so does power. Although this relationship is not linear, we do observe a direct relationship between effect size and power. Effect size describes the difference between the true statistics and the null statistics.
