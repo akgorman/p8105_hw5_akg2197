@@ -206,4 +206,21 @@ baltimore_results <-
 broom::tidy(baltimore_results) |>
   select(estimate, conf.low, conf.high)
 ```
+Now I will write a function to get these values for each of the cities in the dataset:
+
+```{r}
+city_function <- function(cityname) { 
+  city_results <-
+    prop.test(
+    x = unsolved_counts |>
+      filter(city_state == cityname) |>
+      pull(unsolved_count), 
+    n = unsolved_counts |>
+      filter(city_state == cityname) |>
+      pull(total_count))
+
+broom::tidy(city_results) |>
+  select(estimate, conf.low, conf.high)
+}
+```
 
